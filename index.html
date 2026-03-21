@@ -251,25 +251,30 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--ink);min-h
     <div class="int-area">
       <h2>Intercambio</h2>
       <div class="int-block">
-        <h3>Disponibles para intercambiar</h3>
-        <p style="font-size:11px;color:var(--ink3);font-weight:600;margin-bottom:8px">Repetidas pegadas + cualquier figurita de tu pila</p>
-        <div class="rep-chips" id="rep-list"></div>
-      </div>
-      <div class="int-block">
-        <h3>Generar código</h3>
-        <div class="int-label">Ofrecés</div>
+        <h3>Paso 1 — Proponer intercambio</h3>
+        <p style="font-size:11px;color:var(--ink3);font-weight:600;margin-bottom:10px">Generás un código y se lo mandás a tu amigo/a.</p>
+        <div class="int-label">Ofrecés (de tu pila)</div>
         <select class="int-select" id="ofrece-select"><option value="">— seleccioná —</option></select>
-        <div class="int-label">Querés a cambio</div>
+        <div class="int-label">Pedís a cambio</div>
         <select class="int-select" id="quiero-select"><option value="">— seleccioná —</option></select>
-        <button class="int-btn" onclick="generarCodigo()">Generar código</button>
+        <button class="int-btn" onclick="generarCodigo()">Generar propuesta</button>
         <div id="codigo-generado"></div>
       </div>
       <div class="int-block">
-        <h3>Canjear código</h3>
-        <div class="int-label">Pegá el código completo</div>
-        <input class="int-input" id="codigo-input" placeholder="Pegá el código aquí..."/>
-        <button class="int-btn" onclick="canjearCodigo()">Canjear</button>
-        <div id="canje-msg"></div>
+        <h3>Paso 2 — Aceptar propuesta</h3>
+        <p style="font-size:11px;color:var(--ink3);font-weight:600;margin-bottom:10px">Pegás el código que te mandaron. Si tenés la figurita, se genera un código de confirmación para devolverle.</p>
+        <div class="int-label">Código de propuesta</div>
+        <input class="int-input" id="codigo-input" placeholder="Pegá el código de propuesta..."/>
+        <button class="int-btn" onclick="aceptarPropuesta()">Aceptar</button>
+        <div id="aceptar-msg"></div>
+      </div>
+      <div class="int-block">
+        <h3>Paso 3 — Confirmar recepción</h3>
+        <p style="font-size:11px;color:var(--ink3);font-weight:600;margin-bottom:10px">Tu amigo/a te devuelve un código de confirmación. Pegalo acá para recibir tu figurita.</p>
+        <div class="int-label">Código de confirmación</div>
+        <input class="int-input" id="confirm-input" placeholder="Pegá el código de confirmación..."/>
+        <button class="int-btn" onclick="confirmarRecepcion()">Confirmar</button>
+        <div id="confirm-msg"></div>
       </div>
     </div>
   </div>
@@ -379,7 +384,14 @@ function renderAlbum(){
   updatePilaBadge();
 }
 
-function pegarUna(id){if(!(state.pila[id]>0))return;state.pila[id]--;if(!state.pila[id])delete state.pila[id];state.pegadas[id]=(state.pegadas[id]||0)+1;save();renderAlbum();}
+function pegarUna(id){
+  if(!(state.pila[id]>0))return;
+  // Solo se puede pegar una por casilla — si ya tiene una pegada, no se puede pegar otra
+  if(state.pegadas[id]>0){return;}
+  state.pila[id]--;if(!state.pila[id])delete state.pila[id];
+  state.pegadas[id]=1;
+  save();renderAlbum();
+}
 
 function showModal(f){
   const m=document.getElementById('modal');m.style.display='flex';m.className='overlay';
@@ -436,11 +448,11 @@ function abrirSobre(){
 }
 
 function renderIntercambio(){
-  const disp=FIGURITAS.filter(f=>(state.pila[f.id]||0)>0||((state.pegadas[f.id]||0)>1));
-  document.getElementById('rep-list').innerHTML=disp.length===0?'<span style="font-size:12px;color:var(--ink3);font-weight:600">No tenés figuritas disponibles aún.</span>':disp.map(f=>{const t=(state.pila[f.id]||0)+Math.max(0,(state.pegadas[f.id]||0)-1);return `<span class="rep-chip">${f.nombre} ×${t}</span>`;}).join('');
-  document.getElementById('ofrece-select').innerHTML='<option value="">— seleccioná —</option>'+disp.map(f=>{const t=(state.pila[f.id]||0)+Math.max(0,(state.pegadas[f.id]||0)-1);return `<option value="${f.id}">${f.nombre} (×${t})</option>`;}).join('');
-  document.getElementById('quiero-select').innerHTML='<option value="">— seleccioná —</option>'+FIGURITAS.map(f=>`<option value="${f.id}">${f.nombre}</option>`).join('');
+  const disp=FIGURITAS.filter(f=>(state.pila[f.id]||0)>0);
+  document.getElementById('ofrece-select').innerHTML='<option value="">— seleccioná —</option>'+disp.map(f=>`<option value="${f.id}">${f.nombre}</option>`).join('');
+  document.getElementById('quiero-select').innerHTML='<option value="">— seleccioná —</option>'+FIGURITAS.filter(f=>!(state.pegadas[f.id]>0)).map(f=>`<option value="${f.id}">${f.nombre}</option>`).join('');
 }
+
 function generarCodigo(){
   const of=document.getElementById('ofrece-select').value,q=document.getElementById('quiero-select').value;
   const el=document.getElementById('codigo-generado');
@@ -449,23 +461,65 @@ function generarCodigo(){
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let c='';for(let i=0;i<8;i++){if(i===4)c+='-';c+=chars[Math.floor(Math.random()*chars.length)];}
   const ofrece=FIGURITAS.find(f=>f.id===parseInt(of)),quiere=FIGURITAS.find(f=>f.id===parseInt(q));
-  const payload=btoa(JSON.stringify({of:parseInt(of),q:parseInt(q),c,from:userName}));
-  el.innerHTML=`<div class="code-box"><div style="font-size:9px;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:6px">Código de intercambio</div><div class="code-main">${c}</div><div class="code-from">${userName} ofrece <strong>${ofrece.nombre}</strong> · pide <strong>${quiere.nombre}</strong></div><div class="code-payload">${payload}</div></div><p style="font-size:11px;color:var(--ink3);font-weight:600;margin-top:6px">Compartí el código completo (recuadro lila) con tu amigo.</p>`;
+  // tipo:"propuesta" — el que propone da su figurita cuando el otro confirma
+  const payload=encodePayload({tipo:'propuesta',of:parseInt(of),q:parseInt(q),c,from:userName});
+  el.innerHTML=`<div class="code-box"><div style="font-size:9px;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:6px">Código de propuesta</div><div class="code-main">${c}</div><div class="code-from">${userName} ofrece <strong>${ofrece.nombre}</strong> · pide <strong>${quiere.nombre}</strong></div><div class="code-payload">${payload}</div></div><p style="font-size:11px;color:var(--ink3);font-weight:600;margin-top:6px">Mandá el código completo (recuadro lila) a tu amigo/a. Cuando lo acepte, te va a mandar un código de confirmación.</p>`;
 }
-function canjearCodigo(){
-  const raw=document.getElementById('codigo-input').value.trim(),msg=document.getElementById('canje-msg');
+
+function aceptarPropuesta(){
+  // El que recibe la propuesta: da su figurita y genera código de confirmación
+  const raw=document.getElementById('codigo-input').value.trim();
+  const msg=document.getElementById('aceptar-msg');
   try{
-    const data=JSON.parse(atob(raw));
-    const ofrece=FIGURITAS.find(f=>f.id===data.of),quiere=FIGURITAS.find(f=>f.id===data.q);
+    const data=decodePayload(raw);
+    if(data.tipo!=='propuesta')throw new Error();
+    const ofrece=FIGURITAS.find(f=>f.id===data.of); // lo que te ofrecen
+    const quiere=FIGURITAS.find(f=>f.id===data.q);  // lo que piden de vos
     if(!ofrece||!quiere)throw new Error();
-    const enPila=state.pila[quiere.id]||0,repPg=Math.max(0,(state.pegadas[quiere.id]||0)-1);
-    if(enPila+repPg===0){msg.innerHTML=`<div class="int-msg err">No tenés "${quiere.nombre}" disponible para dar.</div>`;return;}
-    if(enPila>0){state.pila[quiere.id]--;if(!state.pila[quiere.id])delete state.pila[quiere.id];}
-    else{state.pegadas[quiere.id]--;if(!state.pegadas[quiere.id])delete state.pegadas[quiere.id];}
-    state.pila[ofrece.id]=(state.pila[ofrece.id]||0)+1;save();renderAlbum();renderIntercambio();updatePilaBadge();
-    const from=data.from?` (de ${data.from})`:'';
-    msg.innerHTML=`<div class="int-msg ok">¡Intercambio exitoso${from}! 🎉 "${ofrece.nombre}" fue a tu pila.</div>`;
+    // Verificar que tenés la figurita que piden
+    if(!(state.pila[quiere.id]>0)){
+      msg.innerHTML=`<div class="int-msg err">No tenés "${quiere.nombre}" en tu pila para dar.</div>`;return;
+    }
+    // Descontar la figurita que das
+    state.pila[quiere.id]--;if(!state.pila[quiere.id])delete state.pila[quiere.id];
+    // Recibís la figurita que te ofrecen en tu pila
+    state.pila[ofrece.id]=(state.pila[ofrece.id]||0)+1;
+    save();renderAlbum();renderIntercambio();updatePilaBadge();
+    // Generar código de confirmación para que el otro reciba lo suyo
+    // El código de confirmación incluye: qué figurita recibe el que propuso (data.of = lo que ofreció = lo que debe descontar), y qué recibe (data.q = lo que pidió)
+    const confirm=encodePayload({tipo:'confirmacion',descuenta:data.of,recibe:data.q,from:userName,c:data.c});
+    msg.innerHTML=`<div class="int-msg ok">¡Aceptado! 🎉 Recibiste "${ofrece.nombre}" en tu pila.<br><br>Ahora mandá este código de confirmación a ${data.from||'tu amigo/a'}:</div>
+      <div class="code-box" style="margin-top:10px">
+        <div style="font-size:9px;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:6px">Código de confirmación</div>
+        <div class="code-payload">${confirm}</div>
+      </div>`;
   }catch(e){msg.innerHTML=`<div class="int-msg err">Código inválido. Copiá el código completo del recuadro lila.</div>`;}
+}
+
+function confirmarRecepcion(){
+  // El que propuso: recibe su figurita con el código de confirmación
+  const raw=document.getElementById('confirm-input').value.trim();
+  const msg=document.getElementById('confirm-msg');
+  try{
+    const data=decodePayload(raw);
+    if(data.tipo!=='confirmacion')throw new Error();
+    const recibe=FIGURITAS.find(f=>f.id===data.recibe);
+    if(!recibe)throw new Error();
+    const descuenta=FIGURITAS.find(f=>f.id===data.descuenta); // lo que vos ofreciste = lo que das
+    const recibeF=FIGURITAS.find(f=>f.id===data.recibe);       // lo que pediste = lo que recibís
+    if(!descuenta||!recibeF)throw new Error();
+    // Verificar que todavía tenés la figurita que prometiste dar
+    if(!(state.pila[descuenta.id]>0)){
+      msg.innerHTML=`<div class="int-msg err">No tenés "${descuenta.nombre}" en tu pila. ¿Ya la intercambiaste antes?</div>`;return;
+    }
+    // Descontar la figurita que diste
+    state.pila[descuenta.id]--;if(!state.pila[descuenta.id])delete state.pila[descuenta.id];
+    // Recibís la figurita que pediste
+    state.pila[recibeF.id]=(state.pila[recibeF.id]||0)+1;
+    save();renderAlbum();renderIntercambio();updatePilaBadge();
+    const from=data.from?` (de ${data.from})`:'';
+    msg.innerHTML=`<div class="int-msg ok">¡Intercambio completado${from}! 🎉<br>Recibiste "${recibeF.nombre}" en tu pila.</div>`;
+  }catch(e){msg.innerHTML=`<div class="int-msg err">Código inválido. Copiá el código completo.</div>`;}
 }
 
 initApp();
