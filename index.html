@@ -360,10 +360,12 @@ function switchTab(n){
     document.getElementById('tab-'+t).style.display=t===n?'':'none';
     document.getElementById('tab-btn-'+t).className='tab'+(t===n?' '+TAB_ACTIVE[n]:'');
   });
-  if(n==='album')renderAlbum();
-  if(n==='pila')renderPila();
-  if(n==='sobres')renderSobres();
-  if(n==='intercambio')renderIntercambio();
+  setTimeout(()=>{
+    if(n==='album')renderAlbum();
+    if(n==='pila')renderPila();
+    if(n==='sobres')renderSobres();
+    if(n==='intercambio')renderIntercambio();
+  },0);
 }
 
 function renderAlbum(){
@@ -468,7 +470,10 @@ function generarCodigo(){
   const of=document.getElementById('ofrece-select').value;
   const q=document.getElementById('quiero-select').value;
   const el=document.getElementById('codigo-generado');
-  if(!of||!q){el.innerHTML='<div class="int-msg err">Elegí ambas figuritas.</div>';return;}
+  const enPila=FIGURITAS.filter(f=>(state.pila[f.id]||0)>0);
+  if(enPila.length===0){el.innerHTML='<div class="int-msg err">No tenés figuritas en tu pila para ofrecer. Abrí sobres primero.</div>';return;}
+  if(!of){el.innerHTML='<div class="int-msg err">Elegí qué figurita ofrecés.</div>';return;}
+  if(!q){el.innerHTML='<div class="int-msg err">Elegí qué figurita pedís.</div>';return;}
   if(of===q){el.innerHTML='<div class="int-msg err">No podés intercambiar la misma figurita.</div>';return;}
   if(!(state.pila[parseInt(of)]>0)){el.innerHTML='<div class="int-msg err">No tenés esa figurita en tu pila.</div>';return;}
   const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
