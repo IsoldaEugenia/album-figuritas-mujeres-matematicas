@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mujeres de la Matemática — Álbum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f0f4ff;--s1:#ffffff;--s2:#f8f9ff;--s3:#eef1ff;
+  --ink:#2d2a4a;--ink2:#4a4870;--ink3:#8886a8;
+  --border:#dddaf5;--border2:#c8c4ee;--r:12px;
+  --col-album:#e8f4fd;--col-pila:#fdf0e8;--col-sobre:#edfaf0;--col-int:#fdf0f8;
+  --ac-album:#3b82f6;--ac-pila:#f97316;--ac-sobre:#22c55e;--ac-int:#d946ef;
+  --ok:#16a34a;--ok-bg:#dcfce7;--err:#dc2626;--err-bg:#fee2e2;
+}
+body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--ink);min-height:100vh;}
+#app{max-width:680px;margin:0 auto;padding:1rem;}
+
+.welcome-overlay,.change-overlay{position:fixed;inset:0;background:rgba(45,42,74,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:1.5rem;}
+.welcome-card{background:#fff;border:2px solid var(--border2);border-radius:20px;padding:2rem;width:100%;max-width:340px;text-align:center;box-shadow:0 8px 40px rgba(59,130,246,.12);}
+.welcome-card h1{font-family:'Fredoka',sans-serif;font-size:26px;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.welcome-card p{font-size:13px;color:var(--ink3);margin-bottom:1.5rem;line-height:1.6;}
+.welcome-input{width:100%;border:2px solid var(--border2);border-radius:var(--r);padding:10px 14px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;background:var(--s2);color:var(--ink);text-align:center;margin-bottom:1rem;}
+.welcome-input:focus{border-color:var(--ac-album);outline:none;}
+.welcome-btn{width:100%;padding:12px;background:var(--ac-album);color:#fff;border:none;border-radius:var(--r);font-family:'Fredoka',sans-serif;font-size:18px;font-weight:600;cursor:pointer;}
+.welcome-btn:hover{opacity:.88;}
+.change-card{background:#fff;border:2px solid var(--border2);border-radius:20px;padding:1.5rem;width:100%;max-width:300px;box-shadow:0 8px 40px rgba(45,42,74,.12);}
+.change-card h2{font-family:'Fredoka',sans-serif;font-size:20px;color:var(--ink);margin-bottom:1rem;}
+.change-card input{width:100%;border:2px solid var(--border2);border-radius:var(--r);padding:10px 14px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;background:var(--s2);color:var(--ink);margin-bottom:1rem;}
+.change-card input:focus{border-color:var(--ac-album);outline:none;}
+.change-btns{display:flex;gap:8px;}
+.change-btns button{flex:1;padding:9px;border:none;border-radius:10px;font-family:'Fredoka',sans-serif;font-size:16px;cursor:pointer;}
+.btn-confirm{background:var(--ac-album);color:#fff;}.btn-confirm:hover{opacity:.88;}
+.btn-cancel{background:var(--s3);color:var(--ink3);border:2px solid var(--border2)!important;}
+
+.app-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;padding:10px 14px;background:#fff;border:2px solid var(--border);border-radius:var(--r);box-shadow:0 2px 8px rgba(59,130,246,.06);}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--ac-album),var(--ac-int));display:flex;align-items:center;justify-content:center;font-family:'Fredoka',sans-serif;font-size:16px;font-weight:600;color:#fff;flex-shrink:0;}
+.user-name{font-size:14px;font-weight:800;color:var(--ink);}
+.user-label{font-size:10px;color:var(--ink3);font-weight:600;}
+.change-name-btn{font-size:12px;font-weight:700;color:var(--ac-album);background:var(--col-album);border:1.5px solid #bfdbfe;border-radius:8px;padding:5px 10px;cursor:pointer;}
+.change-name-btn:hover{opacity:.85;}
+
+.tabs{display:flex;gap:4px;margin-bottom:1rem;}
+.tab{flex:1;padding:10px 4px;text-align:center;cursor:pointer;border-radius:var(--r);font-family:'Fredoka',sans-serif;font-size:15px;font-weight:600;color:var(--ink3);transition:all .15s;position:relative;background:#fff;border:2px solid var(--border);}
+.tab.active-album{background:var(--col-album);color:var(--ac-album);border-color:#93c5fd;}
+.tab.active-pila{background:var(--col-pila);color:var(--ac-pila);border-color:#fdba74;}
+.tab.active-sobre{background:var(--col-sobre);color:var(--ac-sobre);border-color:#86efac;}
+.tab.active-int{background:var(--col-int);color:var(--ac-int);border-color:#f0abfc;}
+.tab:hover:not([class*="active"]){background:var(--s2);}
+.tab-badge{position:absolute;top:-7px;right:-5px;background:var(--ac-pila);color:#fff;font-size:9px;border-radius:20px;padding:1px 6px;font-family:'Nunito',sans-serif;font-weight:900;min-width:18px;text-align:center;}
+
+.panel{border-radius:var(--r);padding:1.25rem;border:2px solid var(--border);}
+.panel-album{background:var(--col-album);}
+.panel-pila{background:var(--col-pila);}
+.panel-sobre{background:var(--col-sobre);}
+.panel-int{background:var(--col-int);}
+
+.album-header{margin-bottom:1rem;}
+.album-header h1{font-family:'Fredoka',sans-serif;font-size:22px;font-weight:700;color:var(--ac-album);}
+.album-header p{font-size:11px;color:var(--ink3);margin-top:3px;font-weight:600;}
+.prog-wrap{background:#bfdbfe;border-radius:20px;height:8px;margin:10px 0 5px;overflow:hidden;}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--ac-album),#818cf8);border-radius:20px;transition:width .5s;}
+.prog-label{font-size:10px;color:var(--ac-album);font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:.75rem;}
+.slot{aspect-ratio:2/3;border-radius:10px;cursor:pointer;position:relative;overflow:hidden;background:#fff;border:2px solid #bfdbfe;transition:transform .15s,box-shadow .15s;display:flex;flex-direction:column;}
+.slot.owned{border-color:var(--ac-album);box-shadow:0 3px 12px rgba(59,130,246,.2);}
+.slot.owned:hover{transform:translateY(-3px) scale(1.05);box-shadow:0 8px 20px rgba(59,130,246,.25);}
+.slot.in-pila{border-color:var(--ac-pila);background:#fff7ed;}
+.slot.in-pila:hover{transform:translateY(-3px) scale(1.05);}
+.slot-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+.slot-num{font-family:'Fredoka',sans-serif;font-size:18px;color:#bfdbfe;font-weight:600;}
+.slot-photo{flex:1;background:#eff6ff;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
+.slot-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;}
+.slot-footer{padding:4px 5px 5px;background:#fff;border-top:1.5px solid #bfdbfe;}
+.slot-name{font-size:7px;font-weight:800;color:var(--ink2);text-align:center;text-transform:uppercase;letter-spacing:.3px;line-height:1.2;}
+.slot-pegar{font-size:6.5px;font-weight:800;background:var(--ac-pila);color:#fff;border:none;border-radius:6px;padding:2px 4px;cursor:pointer;display:block;width:100%;margin-top:2px;text-transform:uppercase;}
+.pila-dot{position:absolute;top:4px;left:4px;width:7px;height:7px;border-radius:50%;background:var(--ac-pila);box-shadow:0 0 4px var(--ac-pila);}
+.rep-badge{position:absolute;top:4px;right:4px;background:var(--ac-int);color:#fff;font-size:8px;border-radius:6px;padding:1px 4px;font-weight:800;}
+
+.overlay{position:fixed;inset:0;background:rgba(45,42,74,.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem;}
+.figucard{background:#fff;border-radius:16px;width:288px;overflow:hidden;border:2px solid var(--border2);box-shadow:0 12px 40px rgba(45,42,74,.2);}
+.figucard-photo{width:100%;height:152px;background:#eff6ff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-bottom:2px solid var(--border);position:relative;overflow:hidden;}
+.figucard-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;}
+.figucard-photo-label{font-size:10px;font-weight:700;color:var(--ink3);letter-spacing:1px;text-transform:uppercase;}
+.figucard-top{padding:12px 14px 10px;border-bottom:2px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.close-btn{background:var(--s2);border:2px solid var(--border2);width:26px;height:26px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--ink3);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.close-btn:hover{border-color:var(--err);color:var(--err);}
+.figucard-num{font-size:9px;font-weight:700;color:var(--ac-album);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px;}
+.figucard-name{font-family:'Fredoka',sans-serif;font-size:20px;font-weight:700;color:var(--ink);line-height:1.1;}
+.figucard-dates{font-size:11px;color:var(--ink3);font-weight:600;margin-top:2px;}
+.figucard-body{padding:12px 14px 14px;}
+.sec-label{font-size:9px;font-weight:800;color:var(--ac-album);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;margin-top:12px;}
+.sec-label:first-child{margin-top:0;}
+.sec-txt{font-size:12px;color:var(--ink2);line-height:1.6;font-weight:600;}
+.curio{background:#fdf4ff;border-left:3px solid var(--ac-int);border-radius:0 8px 8px 0;padding:8px 10px;margin-top:6px;font-size:11.5px;color:var(--ink2);font-weight:600;font-style:italic;line-height:1.5;}
+.modal-pegar{display:block;width:100%;margin-top:12px;padding:10px;background:var(--ac-sobre);color:#fff;border:none;border-radius:10px;font-family:'Fredoka',sans-serif;font-size:17px;font-weight:600;cursor:pointer;}
+.modal-pegar:hover{opacity:.88;}
+.status-line{margin-top:8px;font-size:11px;font-weight:700;}
+
+.pila-header h1{font-family:'Fredoka',sans-serif;font-size:22px;font-weight:700;color:var(--ac-pila);margin-bottom:2px;}
+.pila-header p{font-size:11px;color:var(--ink3);margin-bottom:1rem;font-weight:600;}
+.btn-pegar-todas{display:block;width:100%;padding:11px;background:var(--ac-pila);color:#fff;border:none;border-radius:var(--r);font-family:'Fredoka',sans-serif;font-size:18px;font-weight:600;cursor:pointer;margin-bottom:1rem;}
+.btn-pegar-todas:hover{opacity:.88;}
+.pila-list{display:flex;flex-direction:column;gap:6px;}
+.pila-item{display:flex;gap:10px;background:#fff;border:2px solid #fed7aa;border-radius:var(--r);padding:10px 12px;align-items:center;}
+.pila-card{width:48px;min-width:48px;height:66px;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;border:2px solid #fed7aa;}
+.pila-card-photo{flex:1;background:#fff7ed;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.pila-card-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;}
+.pila-card-footer{padding:2px 3px;background:#fff;border-top:1.5px solid #fed7aa;}
+.pila-card-name{font-size:5px;font-weight:800;color:var(--ink2);text-align:center;text-transform:uppercase;line-height:1.2;}
+.pila-info{flex:1;min-width:0;}
+.pila-name{font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pila-dates{font-size:10px;color:var(--ink3);font-weight:600;margin-top:1px;}
+.pila-status{font-size:10px;font-weight:800;margin-top:2px;}
+.pila-cnt{font-family:'Fredoka',sans-serif;font-size:28px;font-weight:700;color:var(--ac-pila);min-width:30px;text-align:center;}
+.btn-pg{padding:7px 14px;background:var(--ac-pila);color:#fff;border:none;border-radius:10px;font-family:'Fredoka',sans-serif;font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.btn-pg:hover{opacity:.88;}
+.pila-empty{text-align:center;padding:3rem;color:var(--ink3);font-size:13px;font-weight:600;}
+
+.sobre-area{text-align:center;}
+.sobre-area h2{font-family:'Fredoka',sans-serif;font-size:22px;font-weight:700;color:var(--ac-sobre);margin-bottom:4px;}
+.sobres-count{font-size:11px;color:var(--ink3);font-weight:700;margin-bottom:1.25rem;text-transform:uppercase;letter-spacing:.8px;}
+.sobre-wrap{display:inline-block;cursor:pointer;margin:.5rem auto 1.25rem;transition:transform .2s;}
+.sobre-wrap:hover{transform:scale(1.08) rotate(-1.5deg);}
+.daily-bar{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #bbf7d0;border-radius:var(--r);padding:8px 12px;margin-bottom:1rem;}
+.daily-pips{display:flex;gap:5px;}
+.pip{width:14px;height:14px;border-radius:50%;border:2px solid #86efac;background:#dcfce7;}
+.pip.used{background:var(--ac-sobre);border-color:var(--ac-sobre);}
+.daily-label{font-size:11px;color:var(--ac-sobre);font-weight:700;}
+.prenda-box{background:#fff;border:2px solid #bbf7d0;border-radius:var(--r);padding:1.25rem;margin-bottom:1rem;text-align:center;}
+.prenda-label{font-size:10px;font-weight:800;color:var(--ac-sobre);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.cuenta-display{font-family:'Fredoka',sans-serif;font-size:34px;font-weight:700;color:var(--ink);margin-bottom:14px;}
+.cuenta-row{display:flex;gap:8px;align-items:center;justify-content:center;}
+.cuenta-input{width:90px;border:2px solid #86efac;border-radius:10px;padding:10px;font-family:'Nunito',sans-serif;font-size:20px;font-weight:800;background:#f0fdf4;color:var(--ink);text-align:center;}
+.cuenta-input:focus{border-color:var(--ac-sobre);outline:none;}
+.cuenta-btn{padding:10px 20px;background:var(--ac-sobre);color:#fff;border:none;border-radius:10px;font-family:'Fredoka',sans-serif;font-size:17px;font-weight:600;cursor:pointer;}
+.cuenta-btn:hover{opacity:.88;}
+.cuenta-feedback{font-size:13px;font-weight:700;margin-top:10px;padding:8px 12px;border-radius:10px;}
+.cuenta-feedback.ok{background:var(--ok-bg);color:var(--ok);}
+.cuenta-feedback.err{background:var(--err-bg);color:var(--err);}
+.limite-msg{background:#fff;border:2px solid #bbf7d0;border-radius:var(--r);padding:1rem;text-align:center;color:var(--ink2);font-size:13px;font-weight:700;line-height:1.6;}
+.open-btn{padding:12px 40px;background:var(--ac-sobre);color:#fff;border:none;border-radius:var(--r);font-family:'Fredoka',sans-serif;font-size:20px;font-weight:600;cursor:pointer;transition:all .15s;box-shadow:0 4px 14px rgba(34,197,94,.25);}
+.open-btn:hover{opacity:.88;transform:translateY(-1px);}
+.open-btn:disabled{background:#d1fae5;color:#86efac;cursor:default;transform:none;box-shadow:none;}
+.result-cards{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:1rem 0;}
+.result-card{width:74px;background:#fff;border:2px solid #bbf7d0;border-radius:10px;overflow:hidden;animation:popIn .35s cubic-bezier(.34,1.56,.64,1);}
+.result-card-photo{width:100%;height:58px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.result-card-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;}
+.result-card-footer{padding:5px 4px;}
+.mini-name{font-size:8px;font-weight:800;color:var(--ink2);line-height:1.2;text-transform:uppercase;margin-bottom:3px;text-align:center;}
+.badge-new{font-size:8px;color:#fff;background:var(--ac-sobre);border-radius:6px;padding:1px 5px;font-weight:800;display:block;text-align:center;}
+.badge-rep{font-size:8px;color:var(--ink3);background:var(--s3);border-radius:6px;padding:1px 5px;font-weight:700;display:block;text-align:center;border:1px solid var(--border2);}
+@keyframes popIn{from{transform:scale(.4) rotate(-6deg);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+.int-area h2{font-family:'Fredoka',sans-serif;font-size:22px;font-weight:700;color:var(--ac-int);margin-bottom:1rem;}
+.int-block{background:#fff;border:2px solid #f0abfc;border-radius:var(--r);padding:1rem;margin-bottom:.75rem;}
+.int-block h3{font-family:'Fredoka',sans-serif;font-size:16px;font-weight:700;color:var(--ac-int);margin-bottom:8px;}
+.rep-chips{display:flex;flex-wrap:wrap;gap:5px;}
+.rep-chip{background:#fdf4ff;border:1.5px solid #f0abfc;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--ac-int);}
+.int-label{font-size:10px;font-weight:800;color:var(--ink3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.8px;}
+.int-select,.int-input{width:100%;border:2px solid #f0abfc;border-radius:10px;padding:8px 10px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;background:#fdf4ff;color:var(--ink);margin-bottom:8px;}
+.int-select:focus,.int-input:focus{border-color:var(--ac-int);outline:none;}
+.int-btn{padding:9px 22px;background:var(--ac-int);color:#fff;border:none;border-radius:10px;font-family:'Fredoka',sans-serif;font-size:17px;font-weight:600;cursor:pointer;}
+.int-btn:hover{opacity:.88;}
+.code-box{background:#fdf4ff;border:2px solid var(--ac-int);border-radius:var(--r);padding:14px;text-align:center;margin:10px 0;}
+.code-main{font-family:'Fredoka',sans-serif;font-size:30px;font-weight:700;letter-spacing:6px;color:var(--ac-int);}
+.code-from{font-size:11px;color:var(--ink3);font-weight:700;margin-top:6px;}
+.code-payload{font-size:8px;color:var(--ink3);word-break:break-all;margin-top:6px;font-family:monospace;line-height:1.4;background:#f5f3ff;padding:6px 8px;border-radius:8px;}
+.int-msg{font-size:12px;margin-top:8px;padding:8px 10px;border-radius:10px;font-weight:700;}
+.int-msg.ok{background:var(--ok-bg);color:var(--ok);}
+.int-msg.err{background:var(--err-bg);color:var(--err);}
+</style>
+</head>
+<body>
+
+<div id="welcome" style="display:none">
+  <div class="welcome-overlay">
+    <div class="welcome-card">
+      <h1>Mujeres de la Matemática</h1>
+      <p>Coleccioná las 10 figuritas, abrí sobres y intercambiá con tus amigos.</p>
+      <input class="welcome-input" id="welcome-input" placeholder="Tu nombre..." maxlength="24" autocomplete="off"/>
+      <button class="welcome-btn" onclick="confirmarNombre()">¡Empezar!</button>
+    </div>
+  </div>
+</div>
+<div id="change-name-modal" style="display:none">
+  <div class="change-overlay">
+    <div class="change-card">
+      <h2>Cambiar nombre</h2>
+      <input id="change-input" placeholder="Nuevo nombre..." maxlength="24" autocomplete="off"/>
+      <div class="change-btns">
+        <button class="btn-cancel" onclick="cerrarCambioNombre()">Cancelar</button>
+        <button class="btn-confirm" onclick="guardarNuevoNombre()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <div class="app-header">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <div><div class="user-name" id="user-name-display">—</div><div class="user-label">Tu álbum</div></div>
+    </div>
+    <button class="change-name-btn" onclick="abrirCambioNombre()">Cambiar nombre</button>
+  </div>
+  <div class="tabs">
+    <div class="tab active-album" id="tab-btn-album" onclick="switchTab('album')">Mi Álbum</div>
+    <div class="tab" id="tab-btn-pila" onclick="switchTab('pila')">Mi Pila <span class="tab-badge" id="pila-badge" style="display:none">0</span></div>
+    <div class="tab" id="tab-btn-sobres" onclick="switchTab('sobres')">Sobres</div>
+    <div class="tab" id="tab-btn-intercambio" onclick="switchTab('intercambio')">Intercambio</div>
+  </div>
+  <div id="tab-album" class="panel panel-album">
+    <div class="album-header">
+      <h1>Mujeres de la Matemática</h1>
+      <p>Álbum coleccionable · 10 figuritas · <span style="color:var(--ac-pila)">naranja = en tu pila sin pegar</span></p>
+      <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+      <div class="prog-label" id="prog-label">0 / 10 figuritas pegadas</div>
+    </div>
+    <div class="grid" id="album-grid"></div>
+  </div>
+  <div id="tab-pila" class="panel panel-pila" style="display:none">
+    <div class="pila-header"><h1>Mi Pila</h1><p>Figuritas sin pegar — pegá al álbum o intercambiá</p></div>
+    <button class="btn-pegar-todas" id="btn-pegar-todas" onclick="pegarTodas()" style="display:none">Pegar todas las nuevas</button>
+    <div class="pila-list" id="pila-list"></div>
+  </div>
+  <div id="tab-sobres" class="panel panel-sobre" style="display:none">
+    <div class="sobre-area">
+      <h2>Abrí un sobre</h2>
+      <div class="daily-bar">
+        <div class="daily-pips" id="daily-pips"></div>
+        <div class="daily-label" id="daily-label"></div>
+      </div>
+      <p class="sobres-count">Sobres disponibles: <strong id="sobres-count">0</strong></p>
+      <div class="sobre-wrap" onclick="document.getElementById('open-btn').click()">
+        <svg width="116" height="82" viewBox="0 0 116 82" xmlns="http://www.w3.org/2000/svg">
+          <rect x="1" y="1" width="114" height="80" rx="10" fill="#f0fdf4" stroke="#22c55e" stroke-width="2"/>
+          <polygon points="1,1 58,50 115,1" fill="#dcfce7"/>
+          <line x1="1" y1="81" x2="115" y2="81" stroke="#bbf7d0" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div id="prenda-zone"></div>
+      <button class="open-btn" id="open-btn" onclick="abrirSobre()" disabled>Abrir sobre</button>
+      <div id="result-area"></div>
+    </div>
+  </div>
+  <div id="tab-intercambio" class="panel panel-int" style="display:none">
+    <div class="int-area">
+      <h2>Intercambio</h2>
+      <div class="int-block">
+        <h3>Disponibles para intercambiar</h3>
+        <p style="font-size:11px;color:var(--ink3);font-weight:600;margin-bottom:8px">Repetidas pegadas + cualquier figurita de tu pila</p>
+        <div class="rep-chips" id="rep-list"></div>
+      </div>
+      <div class="int-block">
+        <h3>Generar código</h3>
+        <div class="int-label">Ofrecés</div>
+        <select class="int-select" id="ofrece-select"><option value="">— seleccioná —</option></select>
+        <div class="int-label">Querés a cambio</div>
+        <select class="int-select" id="quiero-select"><option value="">— seleccioná —</option></select>
+        <button class="int-btn" onclick="generarCodigo()">Generar código</button>
+        <div id="codigo-generado"></div>
+      </div>
+      <div class="int-block">
+        <h3>Canjear código</h3>
+        <div class="int-label">Pegá el código completo</div>
+        <input class="int-input" id="codigo-input" placeholder="Pegá el código aquí..."/>
+        <button class="int-btn" onclick="canjearCodigo()">Canjear</button>
+        <div id="canje-msg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="modal" style="display:none"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// FOTOS — reemplazá img:"" con la URL de cada imagen
+// Ejemplo: img:"https://misitio.com/noether.jpg"
+// ═══════════════════════════════════════════════════════
+const FIGURITAS=[
+  {id:1, img:"EN.png", nombre:"Emmy Noether",         fechas:"1882–1935", logros:"Demostró el teorema de Noether, conectando simetría con leyes de conservación. Revolucionó el álgebra abstracta.",                curiosidad:"Einstein la llamó la mujer más significativa en la historia de las matemáticas."},
+  {id:2, img:"MM.png", nombre:"Maryam Mirzakhani",    fechas:"1977–2017", logros:"Primera mujer en ganar la Medalla Fields (2014). Trabajó en geometría hiperbólica y superficies de Riemann.",                    curiosidad:"De niña quería ser escritora. Llegó a las matemáticas por accidente y cambió la historia."},
+  {id:3, img:"AL.png", nombre:"Ada Lovelace",         fechas:"1815–1852", logros:"Escribió el primer algoritmo diseñado para ejecutarse en una máquina. Considerada la primera programadora.",                      curiosidad:"Fue hija del poeta Lord Byron, pero eligió los números sobre la poesía."},
+  {id:4, img:"SK.png", nombre:"Sofía Kovalévskaya",   fechas:"1850–1891", logros:"Primera mujer con doctorado en matemáticas en Europa. Premio Bordin por su trabajo en ecuaciones diferenciales.",                 curiosidad:"Se casó por conveniencia para poder estudiar en el extranjero, ya que Rusia no le permitía acceder a la universidad."},
+  {id:5, img:"H.png", nombre:"Hypatia",              fechas:"c.360–415", logros:"Filósofa y matemática neoplatónica. Comentó obras de Diofanto y Apolonio. Primera matemática documentada.",                      curiosidad:"Dirigió la escuela neoplatónica de Alejandría y recibía estudiantes de todo el Mediterráneo."},
+  {id:6, img:"KJ.png", nombre:"Katherine Johnson",    fechas:"1918–2020", logros:"Sus cálculos fueron esenciales para las misiones Apolo de la NASA. Calculó trayectorias orbitales a mano.",                     curiosidad:"Los astronautas pedían que ella verificara las computadoras antes de despegar."},
+  {id:7, img:"FN.png", nombre:"Florence Nightingale", fechas:"1820–1910", logros:"Pionera de la estadística visual. Inventó el diagrama polar para mostrar causas de mortalidad.",                                 curiosidad:"Usó gráficos estadísticos para convencer al gobierno británico de mejorar las condiciones sanitarias militares."},
+  {id:8, img:"GH.png", nombre:"Grace Hopper",         fechas:"1906–1992", logros:"Pionera de la programación y los compiladores. Creó el primer compilador e impulsó el lenguaje COBOL.",                          curiosidad:"Popularizó el término 'bug' al encontrar una polilla real dentro de una computadora en 1947."},
+  {id:9, img:"MC.png", nombre:"Mary Cartwright",      fechas:"1900–1998", logros:"Pionera de la teoría del caos. Su trabajo con Littlewood anticipó conceptos caóticos décadas antes de Lorenz.",                  curiosidad:"Durante la WWII analizó ecuaciones de radiofrecuencia y sin saberlo sentó bases del caos."},
+  {id:10,img:"JR.png", nombre:"Julia Robinson",       fechas:"1919–1985", logros:"Contribuyó decisivamente a resolver el décimo problema de Hilbert. Primera mujer presidenta de la American Mathematical Society.", curiosidad:"Le diagnosticaron una enfermedad cardíaca grave de niña y los médicos dudaban que llegara a adulta."}
+];
+// ═══════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════
+// PREGUNTAS — reemplazá generarPregunta() con tu banco:
+//   const BANCO = [
+//     { texto: "¿Cuánto es la raíz cuadrada de 169?", resp: 13 },
+//     { texto: "¿Cuántos lados tiene un hexágono?", resp: 6 },
+//   ];
+//   function generarPregunta() {
+//     const p = BANCO[Math.floor(Math.random() * BANCO.length)];
+//     preguntaActual = { texto: p.texto, resp: p.resp };
+//   }
+// ═══════════════════════════════════════════════════════
+let preguntaActual=null;
+function generarPregunta(){
+  const ops=['+','-','×'],op=ops[Math.floor(Math.random()*ops.length)];
+  let a,b,resp;
+  if(op==='+'){a=Math.floor(Math.random()*50)+1;b=Math.floor(Math.random()*50)+1;resp=a+b;}
+  else if(op==='-'){a=Math.floor(Math.random()*50)+10;b=Math.floor(Math.random()*a)+1;resp=a-b;}
+  else{a=Math.floor(Math.random()*12)+1;b=Math.floor(Math.random()*12)+1;resp=a*b;}
+  preguntaActual={texto:`${a} ${op} ${b} = ?`,resp};
+}
+
+// ═══════════════════════════════════════════════════════
+// LÍMITE DIARIO — cambiá MAX_SOBRES_DIA si querés
+// ═══════════════════════════════════════════════════════
+const MAX_SOBRES_DIA=3;
+function hoyStr(){const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
+function getSobresHoy(){try{const s=localStorage.getItem('album_mat_daily');if(!s)return{fecha:hoyStr(),usados:0};const d=JSON.parse(s);return d.fecha!==hoyStr()?{fecha:hoyStr(),usados:0}:d;}catch(e){return{fecha:hoyStr(),usados:0};}}
+function setSobresHoy(u){try{localStorage.setItem('album_mat_daily',JSON.stringify({fecha:hoyStr(),usados:u}));}catch(e){}}
+
+const FOTO_SVG=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#8886a8" stroke-width="1.4"/><circle cx="12" cy="12" r="3" stroke="#8886a8" stroke-width="1.4"/><path d="M8 5l1.5-2h5L16 5" stroke="#8886a8" stroke-width="1.4"/></svg>`;
+function fotoSlot(f){return f.img?`<img src="${f.img}">`:FOTO_SVG;}
+
+const TAB_ACTIVE={album:'active-album',pila:'active-pila',sobres:'active-sobre',intercambio:'active-int'};
+
+let state={pegadas:{},pila:{},sobres:0};
+let userName='';
+try{const s=localStorage.getItem('album_mat');if(s)state=JSON.parse(s);}catch(e){}
+try{const u=localStorage.getItem('album_mat_user');if(u)userName=u;}catch(e){}
+function save(){try{localStorage.setItem('album_mat',JSON.stringify(state));}catch(e){}}
+function saveUser(){try{localStorage.setItem('album_mat_user',userName);}catch(e){}}
+function totalPila(){return Object.values(state.pila).reduce((a,b)=>a+b,0);}
+function updatePilaBadge(){const t=totalPila(),b=document.getElementById('pila-badge');if(t>0){b.style.display='';b.textContent=t;}else b.style.display='none';}
+
+function initApp(){
+  if(!userName){document.getElementById('welcome').style.display='';document.getElementById('app').style.display='none';setTimeout(()=>document.getElementById('welcome-input').focus(),100);}
+  else{document.getElementById('welcome').style.display='none';document.getElementById('app').style.display='';updateHeader();renderAlbum();renderSobres();}
+}
+function confirmarNombre(){const val=document.getElementById('welcome-input').value.trim();if(!val)return;userName=val;saveUser();document.getElementById('welcome').style.display='none';document.getElementById('app').style.display='';updateHeader();renderAlbum();renderSobres();}
+document.getElementById('welcome-input').addEventListener('keydown',e=>{if(e.key==='Enter')confirmarNombre();});
+function updateHeader(){document.getElementById('user-name-display').textContent=userName;document.getElementById('user-avatar').textContent=userName[0].toUpperCase();}
+function abrirCambioNombre(){document.getElementById('change-input').value=userName;document.getElementById('change-name-modal').style.display='';setTimeout(()=>document.getElementById('change-input').focus(),100);}
+function cerrarCambioNombre(){document.getElementById('change-name-modal').style.display='none';}
+function guardarNuevoNombre(){const val=document.getElementById('change-input').value.trim();if(!val)return;userName=val;saveUser();updateHeader();cerrarCambioNombre();}
+document.getElementById('change-input').addEventListener('keydown',e=>{if(e.key==='Enter')guardarNuevoNombre();});
+
+function switchTab(n){
+  ['album','pila','sobres','intercambio'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display=t===n?'':'none';
+    document.getElementById('tab-btn-'+t).className='tab'+(t===n?' '+TAB_ACTIVE[n]:'');
+  });
+  if(n==='album')renderAlbum();
+  if(n==='pila')renderPila();
+  if(n==='sobres')renderSobres();
+  if(n==='intercambio')renderIntercambio();
+}
+
+function renderAlbum(){
+  const grid=document.getElementById('album-grid');grid.innerHTML='';let owned=0;
+  FIGURITAS.forEach(f=>{
+    const pg=state.pegadas[f.id]||0,pl=state.pila[f.id]||0;if(pg>0)owned++;
+    const sl=document.createElement('div');
+    sl.className='slot'+(pg>0?' owned':pl>0?' in-pila':'');
+    if(pg>0||pl>0){
+      const totalRep=(pg>1?pg-1:0)+pl;
+      sl.innerHTML=`${pl>0&&!pg?'<div class="pila-dot"></div>':''}<div class="slot-photo">${fotoSlot(f)}</div><div class="slot-footer"><div class="slot-name">${f.nombre.split(' ')[0]}</div>${pl>0&&!pg?`<button class="slot-pegar" onclick="event.stopPropagation();pegarUna(${f.id})">Pegar</button>`:''}</div>${totalRep>0?`<div class="rep-badge">+${totalRep}</div>`:''}`;
+      sl.onclick=()=>showModal(f);
+    }else{sl.innerHTML=`<div class="slot-empty"><span class="slot-num">${f.id}</span></div>`;}
+    grid.appendChild(sl);
+  });
+  document.getElementById('prog-bar').style.width=Math.round(owned/FIGURITAS.length*100)+'%';
+  document.getElementById('prog-label').textContent=`${owned} / ${FIGURITAS.length} figuritas pegadas`;
+  updatePilaBadge();
+}
+
+function pegarUna(id){if(!(state.pila[id]>0))return;state.pila[id]--;if(!state.pila[id])delete state.pila[id];state.pegadas[id]=(state.pegadas[id]||0)+1;save();renderAlbum();}
+
+function showModal(f){
+  const m=document.getElementById('modal');m.style.display='flex';m.className='overlay';
+  const pl=state.pila[f.id]||0,pg=state.pegadas[f.id]||0;
+  const fotoHtml=f.img?`<img src="${f.img}">`:`${FOTO_SVG}<div class="figucard-photo-label">Foto / Ilustración</div>`;
+  m.innerHTML=`<div class="figucard"><div class="figucard-photo">${fotoHtml}</div><div class="figucard-top"><div><div class="figucard-num">#${String(f.id).padStart(2,'0')} · Mujeres de la Matemática</div><div class="figucard-name">${f.nombre}</div><div class="figucard-dates">${f.fechas}</div></div><button class="close-btn" onclick="closeModal()">✕</button></div><div class="figucard-body"><div class="sec-label">Logros</div><div class="sec-txt">${f.logros}</div><div class="sec-label">Dato curioso</div><div class="curio">${f.curiosidad}</div>${pg>0?`<div class="status-line" style="color:var(--ac-sobre)">✓ Pegada en el álbum${pg>1?` · ${pg} copias`:''}</div>`:''}${pl>0?`<div class="status-line" style="color:var(--ac-pila)">En tu pila: ${pl} sin pegar</div>`:''}${pl>0?`<button class="modal-pegar" onclick="pegarUna(${f.id});closeModal()">Pegar al álbum</button>`:''}</div></div>`;
+  m.onclick=e=>{if(e.target===m)closeModal();};
+}
+function closeModal(){document.getElementById('modal').style.display='none';}
+
+function renderPila(){
+  const list=document.getElementById('pila-list'),btnT=document.getElementById('btn-pegar-todas');
+  const items=FIGURITAS.filter(f=>state.pila[f.id]>0);updatePilaBadge();
+  if(!items.length){btnT.style.display='none';list.innerHTML=`<div class="pila-empty">La pila está vacía 📭<br>Abrí sobres para conseguir figuritas.</div>`;return;}
+  btnT.style.display=items.some(f=>!(state.pegadas[f.id]>0))?'':'none';list.innerHTML='';
+  items.forEach(f=>{
+    const cnt=state.pila[f.id],esNueva=!(state.pegadas[f.id]>0);
+    const d=document.createElement('div');d.className='pila-item';
+    d.innerHTML=`<div class="pila-card"><div class="pila-card-photo">${f.img?`<img src="${f.img}">`:FOTO_SVG}</div><div class="pila-card-footer"><div class="pila-card-name">${f.nombre.split(' ')[0]}</div></div></div><div class="pila-info"><div class="pila-name">${f.nombre}</div><div class="pila-dates">${f.fechas}</div><div class="pila-status" style="color:${esNueva?'var(--ac-pila)':'var(--ink3)'}">${esNueva?'✨ Nueva':'Ya pegada'}</div></div><div class="pila-cnt">${cnt}</div><button class="btn-pg" onclick="pegarUna(${f.id});renderPila()">Pegar una</button>`;
+    list.appendChild(d);
+  });
+}
+function pegarTodas(){FIGURITAS.forEach(f=>{if(state.pila[f.id]>0&&!(state.pegadas[f.id]>0)){state.pegadas[f.id]=(state.pegadas[f.id]||0)+state.pila[f.id];delete state.pila[f.id];}});save();renderPila();renderAlbum();}
+
+function renderSobres(){
+  const daily=getSobresHoy(),usados=daily.usados,restantes=MAX_SOBRES_DIA-usados;
+  const pips=document.getElementById('daily-pips');pips.innerHTML='';
+  for(let i=0;i<MAX_SOBRES_DIA;i++){const p=document.createElement('div');p.className='pip'+(i<usados?' used':'');pips.appendChild(p);}
+  document.getElementById('daily-label').textContent=restantes>0?`Podés ganar ${restantes} sobre${restantes>1?'s':''} hoy 🎯`:'¡Límite diario alcanzado! Volvé mañana 🌙';
+  document.getElementById('sobres-count').textContent=state.sobres;
+  document.getElementById('open-btn').disabled=state.sobres===0;
+  document.getElementById('result-area').innerHTML='';
+  restantes>0?mostrarPregunta():document.getElementById('prenda-zone').innerHTML=`<div class="limite-msg">Ya respondiste ${MAX_SOBRES_DIA} preguntas hoy.<br><strong>Volvé mañana</strong> para ganar más sobres. 🌙</div>`;
+}
+function mostrarPregunta(){
+  generarPregunta();
+  document.getElementById('prenda-zone').innerHTML=`<div class="prenda-box"><div class="prenda-label">Respondé correctamente para ganar un sobre 🎁</div><div class="cuenta-display">${preguntaActual.texto}</div><div class="cuenta-row"><input class="cuenta-input" id="cuenta-input" type="number" placeholder="?" autocomplete="off"/><button class="cuenta-btn" onclick="verificarRespuesta()">OK</button></div><div id="cuenta-feedback"></div></div>`;
+  setTimeout(()=>{const i=document.getElementById('cuenta-input');if(i)i.addEventListener('keydown',e=>{if(e.key==='Enter')verificarRespuesta();});},50);
+}
+function verificarRespuesta(){
+  const val=parseInt(document.getElementById('cuenta-input').value);
+  const fb=document.getElementById('cuenta-feedback');
+  if(isNaN(val)){fb.innerHTML='<div class="cuenta-feedback err">Ingresá un número.</div>';return;}
+  const daily=getSobresHoy();
+  if(val===preguntaActual.resp){state.sobres++;save();setSobresHoy(daily.usados+1);document.getElementById('sobres-count').textContent=state.sobres;document.getElementById('open-btn').disabled=false;fb.innerHTML=`<div class="cuenta-feedback ok">¡Correcto! 🎉 Ganaste un sobre.</div>`;setTimeout(()=>renderSobres(),900);}
+  else{setSobresHoy(daily.usados+1);fb.innerHTML=`<div class="cuenta-feedback err">Incorrecto 😕 — perdiste este sobre. La respuesta era <strong>${preguntaActual.resp}</strong>.</div>`;setTimeout(()=>renderSobres(),1800);}
+}
+function abrirSobre(){
+  if(state.sobres<=0)return;state.sobres--;
+  const elegidas=[];for(let i=0;i<3;i++)elegidas.push(FIGURITAS[Math.floor(Math.random()*FIGURITAS.length)]);
+  elegidas.forEach(f=>{state.pila[f.id]=(state.pila[f.id]||0)+1;});save();updatePilaBadge();
+  document.getElementById('sobres-count').textContent=state.sobres;document.getElementById('open-btn').disabled=state.sobres===0;
+  document.getElementById('result-area').innerHTML=`<p style="font-size:11px;font-weight:800;margin-bottom:10px;color:var(--ac-sobre);text-transform:uppercase;letter-spacing:.8px">¡Fueron a tu pila! 🎊</p><div class="result-cards">${elegidas.map(f=>`<div class="result-card"><div class="result-card-photo">${f.img?`<img src="${f.img}">`:FOTO_SVG}</div><div class="result-card-footer"><div class="mini-name">${f.nombre}</div>${!(state.pegadas[f.id]>0)?'<span class="badge-new">Nueva ✨</span>':'<span class="badge-rep">Repetida</span>'}</div></div>`).join('')}</div><p style="font-size:11px;color:var(--ink3);font-weight:600;margin-top:6px">Andá a "Mi Pila" para pegarlas.</p>`;
+}
+
+function renderIntercambio(){
+  const disp=FIGURITAS.filter(f=>(state.pila[f.id]||0)>0||((state.pegadas[f.id]||0)>1));
+  document.getElementById('rep-list').innerHTML=disp.length===0?'<span style="font-size:12px;color:var(--ink3);font-weight:600">No tenés figuritas disponibles aún.</span>':disp.map(f=>{const t=(state.pila[f.id]||0)+Math.max(0,(state.pegadas[f.id]||0)-1);return `<span class="rep-chip">${f.nombre} ×${t}</span>`;}).join('');
+  document.getElementById('ofrece-select').innerHTML='<option value="">— seleccioná —</option>'+disp.map(f=>{const t=(state.pila[f.id]||0)+Math.max(0,(state.pegadas[f.id]||0)-1);return `<option value="${f.id}">${f.nombre} (×${t})</option>`;}).join('');
+  document.getElementById('quiero-select').innerHTML='<option value="">— seleccioná —</option>'+FIGURITAS.map(f=>`<option value="${f.id}">${f.nombre}</option>`).join('');
+}
+function generarCodigo(){
+  const of=document.getElementById('ofrece-select').value,q=document.getElementById('quiero-select').value;
+  const el=document.getElementById('codigo-generado');
+  if(!of||!q){el.innerHTML='<div class="int-msg err">Elegí ambas figuritas.</div>';return;}
+  if(of===q){el.innerHTML='<div class="int-msg err">No podés intercambiar la misma figurita.</div>';return;}
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let c='';for(let i=0;i<8;i++){if(i===4)c+='-';c+=chars[Math.floor(Math.random()*chars.length)];}
+  const ofrece=FIGURITAS.find(f=>f.id===parseInt(of)),quiere=FIGURITAS.find(f=>f.id===parseInt(q));
+  const payload=btoa(JSON.stringify({of:parseInt(of),q:parseInt(q),c,from:userName}));
+  el.innerHTML=`<div class="code-box"><div style="font-size:9px;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:6px">Código de intercambio</div><div class="code-main">${c}</div><div class="code-from">${userName} ofrece <strong>${ofrece.nombre}</strong> · pide <strong>${quiere.nombre}</strong></div><div class="code-payload">${payload}</div></div><p style="font-size:11px;color:var(--ink3);font-weight:600;margin-top:6px">Compartí el código completo (recuadro lila) con tu amigo.</p>`;
+}
+function canjearCodigo(){
+  const raw=document.getElementById('codigo-input').value.trim(),msg=document.getElementById('canje-msg');
+  try{
+    const data=JSON.parse(atob(raw));
+    const ofrece=FIGURITAS.find(f=>f.id===data.of),quiere=FIGURITAS.find(f=>f.id===data.q);
+    if(!ofrece||!quiere)throw new Error();
+    const enPila=state.pila[quiere.id]||0,repPg=Math.max(0,(state.pegadas[quiere.id]||0)-1);
+    if(enPila+repPg===0){msg.innerHTML=`<div class="int-msg err">No tenés "${quiere.nombre}" disponible para dar.</div>`;return;}
+    if(enPila>0){state.pila[quiere.id]--;if(!state.pila[quiere.id])delete state.pila[quiere.id];}
+    else{state.pegadas[quiere.id]--;if(!state.pegadas[quiere.id])delete state.pegadas[quiere.id];}
+    state.pila[ofrece.id]=(state.pila[ofrece.id]||0)+1;save();renderAlbum();renderIntercambio();updatePilaBadge();
+    const from=data.from?` (de ${data.from})`:'';
+    msg.innerHTML=`<div class="int-msg ok">¡Intercambio exitoso${from}! 🎉 "${ofrece.nombre}" fue a tu pila.</div>`;
+  }catch(e){msg.innerHTML=`<div class="int-msg err">Código inválido. Copiá el código completo del recuadro lila.</div>`;}
+}
+
+initApp();
+</script>
+</body>
+</html>
