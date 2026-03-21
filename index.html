@@ -175,6 +175,63 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--ink);min-h
 .copy-btn{background:var(--ac-int);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-family:'Fredoka',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;display:block;width:100%;}
 .copy-btn:hover{opacity:.88;}
 .copy-btn.copied{background:var(--ac-sobre);}
+
+/* ── RESPONSIVE — celular ── */
+@media (max-width: 480px) {
+  #app { padding: .6rem; }
+
+  /* Header */
+  .app-header { padding: 7px 10px; }
+  .user-name { font-size: 13px; }
+  .change-name-btn { font-size: 11px; padding: 4px 8px; }
+
+  /* Tabs */
+  .tabs { gap: 3px; }
+  .tab { font-size: 12px; padding: 8px 2px; }
+
+  /* Panel */
+  .panel { padding: 1rem; }
+
+  /* Album grid — 5 columnas en celu chico se ven muy pequeñas, usamos 4 */
+  .grid { grid-template-columns: repeat(4, 1fr); gap: 5px; }
+  .slot-num { font-size: 14px; }
+  .slot-name { font-size: 6.5px; }
+
+  /* Album header */
+  .album-header h1 { font-size: 18px; }
+
+  /* Modal — ocupa casi toda la pantalla */
+  .overlay { padding: .5rem; align-items: flex-end; }
+  .figucard { width: 100%; border-radius: 16px 16px 0 0; max-height: 92vh; overflow-y: auto; }
+  .figucard-photo { height: 180px; }
+  .figucard-name { font-size: 18px; }
+
+  /* Pila */
+  .pila-header h1 { font-size: 18px; }
+  .pila-item { padding: 8px 10px; gap: 8px; }
+  .pila-name { font-size: 12px; }
+  .pila-cnt { font-size: 22px; min-width: 24px; }
+  .btn-pg { padding: 6px 10px; font-size: 13px; }
+
+  /* Sobres */
+  .sobre-area h2 { font-size: 18px; }
+  .daily-bar { padding: 7px 10px; }
+  .daily-label { font-size: 10px; }
+  .cuenta-display { font-size: 28px; }
+  .cuenta-input { width: 80px; font-size: 18px; padding: 8px; }
+  .open-btn { padding: 11px 28px; font-size: 17px; }
+
+  /* Intercambio */
+  .int-area h2 { font-size: 18px; }
+  .int-block { padding: .85rem; }
+  .int-block h3 { font-size: 14px; }
+  .code-payload { font-size: 7.5px; }
+  .copy-btn { font-size: 13px; padding: 8px 12px; }
+
+  /* Welcome */
+  .welcome-card { padding: 1.5rem; }
+  .welcome-card h1 { font-size: 20px; }
+}
 </style>
 </head>
 <body>
