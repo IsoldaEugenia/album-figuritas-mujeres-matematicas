@@ -548,7 +548,17 @@ function renderPila(){
     list.appendChild(d);
   });
 }
-function pegarTodas(){FIGURITAS.forEach(f=>{if(state.pila[f.id]>0&&!(state.pegadas[f.id]>0)){state.pegadas[f.id]=(state.pegadas[f.id]||0)+state.pila[f.id];delete state.pila[f.id];}});save();renderPila();renderAlbum();}
+function pegarTodas(){
+  FIGURITAS.forEach(f=>{
+    if(state.pila[f.id]>0 && !(state.pegadas[f.id]>0)){
+      // Pega solo una al álbum, el resto queda en la pila como repetidas
+      state.pegadas[f.id]=1;
+      state.pila[f.id]--;
+      if(!state.pila[f.id])delete state.pila[f.id];
+    }
+  });
+  save();renderPila();renderAlbum();checkCompletado();
+}
 
 function renderSobres(){
   const daily=getSobresHoy(),usados=daily.usados,restantes=MAX_SOBRES_DIA-usados;
