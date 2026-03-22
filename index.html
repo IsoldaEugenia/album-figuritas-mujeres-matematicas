@@ -176,6 +176,34 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--ink);min-h
 .copy-btn:hover{opacity:.88;}
 .copy-btn.copied{background:var(--ac-sobre);}
 
+
+/* ── COMPLETADO ── */
+.trofeo{font-size:20px;margin-left:6px;cursor:pointer;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.2);}}
+.album-completo{background:linear-gradient(135deg,#fdf3d8,#fdf0f8);border:2px solid var(--ac-int);border-radius:var(--r);padding:1rem;margin-bottom:1rem;text-align:center;}
+.album-completo h2{font-family:'Fredoka',sans-serif;font-size:20px;color:var(--ac-int);margin-bottom:4px;}
+.album-completo p{font-size:12px;color:var(--ink3);font-weight:600;}
+.dato-extra{background:linear-gradient(135deg,var(--col-int),var(--col-sobre));border:2px solid var(--ac-int);border-radius:var(--r);padding:1rem;margin-top:1rem;}
+.dato-extra-title{font-family:'Fredoka',sans-serif;font-size:14px;color:var(--ac-int);margin-bottom:6px;}
+.dato-extra-txt{font-size:12px;color:var(--ink2);line-height:1.6;font-weight:600;}
+
+/* Confetti */
+.confetti-container{position:fixed;inset:0;pointer-events:none;z-index:999;overflow:hidden;}
+.confetti-piece{position:absolute;width:10px;height:10px;top:-10px;animation:confetti-fall linear forwards;}
+@keyframes confetti-fall{0%{transform:translateY(0) rotate(0deg);opacity:1;}100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+
+/* Modal completado */
+.completado-overlay{position:fixed;inset:0;background:rgba(45,42,74,.7);display:flex;align-items:center;justify-content:center;z-index:300;padding:1.5rem;}
+.completado-card{background:#fff;border-radius:20px;padding:2rem;width:100%;max-width:340px;text-align:center;border:3px solid var(--ac-int);box-shadow:0 12px 40px rgba(217,70,239,.2);}
+.completado-card .emoji{font-size:48px;margin-bottom:8px;}
+.completado-card h1{font-family:'Fredoka',sans-serif;font-size:26px;color:var(--ac-int);margin-bottom:6px;}
+.completado-card p{font-size:13px;color:var(--ink3);line-height:1.6;margin-bottom:1rem;}
+.completado-btn{width:100%;padding:12px;background:var(--ac-int);color:#fff;border:none;border-radius:var(--r);font-family:'Fredoka',sans-serif;font-size:18px;font-weight:600;cursor:pointer;}
+.completado-btn:hover{opacity:.88;}
+.datos-extra-list{text-align:left;background:var(--col-int);border-radius:10px;padding:.75rem 1rem;margin-bottom:1rem;}
+.datos-extra-list li{font-size:12px;color:var(--ink2);font-weight:600;line-height:1.8;list-style:none;padding-left:4px;}
+.datos-extra-list li::before{content:"✨ ";}
+
 /* ── RESPONSIVE — celular ── */
 @media (max-width: 480px) {
   #app { padding: .6rem; }
@@ -441,8 +469,24 @@ function renderAlbum(){
     }else{sl.innerHTML=`<div class="slot-empty"><span class="slot-num">${f.id}</span></div>`;}
     grid.appendChild(sl);
   });
-  document.getElementById('prog-bar').style.width=Math.round(owned/FIGURITAS.length*100)+'%';
-  document.getElementById('prog-label').textContent=`${owned} / ${FIGURITAS.length} figuritas pegadas`;
+  const pct=Math.round(owned/FIGURITAS.length*100);
+  document.getElementById('prog-bar').style.width=pct+'%';
+  const completo=owned===FIGURITAS.length;
+  document.getElementById('prog-label').textContent=completo?'🏆 ¡Álbum completo!':owned+' / '+FIGURITAS.length+' figuritas pegadas';
+  // Trofeo en header
+  const existing=document.getElementById('trofeo-header');
+  if(completo&&!existing){
+    const t=document.createElement('span');t.id='trofeo-header';t.className='trofeo';t.textContent='🏆';
+    t.title='¡Álbum completo!';t.onclick=mostrarCompletado;
+    document.getElementById('user-name-display').after(t);
+  }
+  // Banner en álbum si está completo
+  const existingBanner=document.getElementById('album-completo-banner');
+  if(completo&&!existingBanner){
+    const banner=document.createElement('div');banner.id='album-completo-banner';banner.className='album-completo';
+    banner.innerHTML='<h2>🏆 ¡Álbum completo!</h2><p>Coleccionaste las 10 mujeres de la matemática. ¡Felicitaciones!</p>';
+    document.getElementById('album-grid').before(banner);
+  }
   updatePilaBadge();
 }
 
@@ -453,6 +497,7 @@ function pegarUna(id){
   state.pila[id]--;if(!state.pila[id])delete state.pila[id];
   state.pegadas[id]=1;
   save();renderAlbum();
+  checkCompletado();
 }
 
 function showModal(f){
@@ -508,6 +553,58 @@ function abrirSobre(){
   document.getElementById('sobres-count').textContent=state.sobres;document.getElementById('open-btn').disabled=state.sobres===0;
   document.getElementById('result-area').innerHTML=`<p style="font-size:11px;font-weight:800;margin-bottom:10px;color:var(--ac-sobre);text-transform:uppercase;letter-spacing:.8px">¡Fueron a tu pila! 🎊</p><div class="result-cards">${elegidas.map(f=>`<div class="result-card"><div class="result-card-photo">${f.img?`<img src="${f.img}">`:FOTO_SVG}</div><div class="result-card-footer"><div class="mini-name">${f.nombre}</div>${!(state.pegadas[f.id]>0)?'<span class="badge-new">Nueva ✨</span>':'<span class="badge-rep">Repetida</span>'}</div></div>`).join('')}</div><p style="font-size:11px;color:var(--ink3);font-weight:600;margin-top:6px">Andá a "Mi Pila" para pegarlas.</p>`;
 }
+
+const DATOS_EXTRA = [
+  "Emmy Noether revolucionó el álgebra en una época en que las mujeres no podían dar clases universitarias.",
+  "Katherine Johnson calculó las trayectorias del Apolo 11 a mano — las computadoras debían verificar sus resultados.",
+  "Maryam Mirzakhani es la única mujer en ganar la Medalla Fields en sus 80 años de historia.",
+  "Grace Hopper encontró un bug literal — una polilla — dentro de una computadora en 1947.",
+  "Hypatia dirigió una escuela de matemáticas en Alejandría hace más de 1600 años.",
+  "Sofía Kovalévskaya se casó por conveniencia solo para poder estudiar en Europa.",
+  "Florence Nightingale inventó el gráfico de áreas polares para convencer al gobierno con datos.",
+  "Julia Robinson fue la primera mujer presidenta de la American Mathematical Society.",
+  "Mary Cartwright sentó las bases del caos matemático mientras analizaba radios durante la guerra.",
+  "Ada Lovelace escribió el primer algoritmo de la historia décadas antes de que existiera la computadora."
+];
+
+function lanzarConfetti(){
+  const container=document.getElementById('confetti-container');
+  container.style.display='';
+  container.innerHTML='';
+  const colors=['#3b82f6','#f97316','#22c55e','#d946ef','#ffd600','#ff3cac','#00ffcc'];
+  for(let i=0;i<80;i++){
+    const piece=document.createElement('div');
+    piece.className='confetti-piece';
+    piece.style.left=Math.random()*100+'vw';
+    piece.style.background=colors[Math.floor(Math.random()*colors.length)];
+    piece.style.borderRadius=Math.random()>.5?'50%':'2px';
+    piece.style.width=(6+Math.random()*8)+'px';
+    piece.style.height=(6+Math.random()*8)+'px';
+    piece.style.animationDuration=(2+Math.random()*2)+'s';
+    piece.style.animationDelay=(Math.random()*1.5)+'s';
+    container.appendChild(piece);
+  }
+  setTimeout(()=>{container.style.display='none';},5000);
+}
+
+function mostrarCompletado(){
+  lanzarConfetti();
+  document.getElementById('completado-modal').style.display='';
+}
+
+function cerrarCompletado(){
+  document.getElementById('completado-modal').style.display='none';
+}
+
+function checkCompletado(){
+  const owned=FIGURITAS.filter(f=>(state.pegadas[f.id]||0)>0).length;
+  if(owned===FIGURITAS.length && !state.albumCompletadoMostrado){
+    state.albumCompletadoMostrado=true;
+    save();
+    setTimeout(mostrarCompletado, 600);
+  }
+}
+
 function encodePayload(obj){
   try{return btoa(unescape(encodeURIComponent(JSON.stringify(obj))));}
   catch(e){return btoa(JSON.stringify(obj));}
@@ -624,5 +721,25 @@ function copiarCodigo(payloadId, btnId){
 
 initApp();
 </script>
+
+<div id="completado-modal" style="display:none">
+  <div class="completado-overlay">
+    <div class="completado-card">
+      <div class="emoji">🏆</div>
+      <h1>¡Álbum completo!</h1>
+      <p>Coleccionaste las 10 figuras de mujeres que cambiaron la historia de la matemática. ¡Increíble!</p>
+      <div class="datos-extra-list">
+        <li>Emmy Noether revolucionó el álgebra en una época en que las mujeres no podían dar clases.</li>
+        <li>Katherine Johnson calculó trayectorias orbitales a mano con una precisión que las computadoras debían verificar.</li>
+        <li>Maryam Mirzakhani es la única mujer en ganar la Medalla Fields, el mayor honor en matemáticas.</li>
+        <li>Grace Hopper encontró un bug literal — una polilla — dentro de una computadora en 1947.</li>
+        <li>Hypatia enseñó matemáticas en Alejandría hace más de 1600 años.</li>
+      </div>
+      <button class="completado-btn" onclick="cerrarCompletado()">¡Genial! 🎉</button>
+    </div>
+  </div>
+</div>
+<div id="confetti-container" class="confetti-container" style="display:none"></div>
+
 </body>
 </html>
