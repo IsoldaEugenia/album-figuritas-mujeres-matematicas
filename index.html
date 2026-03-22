@@ -42,6 +42,8 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--ink);min-h
 .user-label{font-size:10px;color:var(--ink3);font-weight:600;}
 .change-name-btn{font-size:12px;font-weight:700;color:var(--ac-album);background:var(--col-album);border:1.5px solid #bfdbfe;border-radius:8px;padding:5px 10px;cursor:pointer;}
 .change-name-btn:hover{opacity:.85;}
+.reset-btn{font-size:11px;font-weight:700;color:var(--err);background:#fdecea;border:1.5px solid #f5c6c2;border-radius:8px;padding:5px 10px;cursor:pointer;}
+.reset-btn:hover{background:#fee2e2;}
 
 .tabs{display:flex;gap:4px;margin-bottom:1rem;}
 .tab{flex:1;padding:10px 4px;text-align:center;cursor:pointer;border-radius:var(--r);font-family:'Fredoka',sans-serif;font-size:15px;font-weight:600;color:var(--ink3);transition:all .15s;position:relative;background:#fff;border:2px solid var(--border);}
@@ -293,7 +295,10 @@ body{background:var(--bg);font-family:'Nunito',sans-serif;color:var(--ink);min-h
       <div class="user-avatar" id="user-avatar">?</div>
       <div><div class="user-name" id="user-name-display">—</div><div class="user-label">Tu álbum</div></div>
     </div>
-    <button class="change-name-btn" onclick="abrirCambioNombre()">Cambiar nombre</button>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button class="change-name-btn" onclick="abrirCambioNombre()">Cambiar nombre</button>
+      <button class="reset-btn" onclick="confirmarReinicio()">Reiniciar</button>
+    </div>
   </div>
   <div class="tabs">
     <div class="tab active-album" id="tab-btn-album" onclick="switchTab('album')">Mi Álbum</div>
@@ -435,6 +440,28 @@ function initApp(){
   if(!userName){document.getElementById('welcome').style.display='';document.getElementById('app').style.display='none';setTimeout(()=>document.getElementById('welcome-input').focus(),100);}
   else{document.getElementById('welcome').style.display='none';document.getElementById('app').style.display='';updateHeader();renderAlbum();renderSobres();}
 }
+
+function confirmarReinicio(){
+  document.getElementById('reset-modal').style.display='';
+}
+
+function ejecutarReinicio(){
+  // Borrar todo el localStorage del álbum
+  try{
+    localStorage.removeItem('album_mat');
+    localStorage.removeItem('album_mat_user');
+    localStorage.removeItem('album_mat_daily');
+  }catch(e){}
+  // Resetear estado en memoria
+  state={pegadas:{},pila:{},sobres:0,albumCompletadoMostrado:false};
+  userName='';
+  // Cerrar modal y volver a la pantalla de bienvenida
+  document.getElementById('reset-modal').style.display='none';
+  document.getElementById('app').style.display='none';
+  document.getElementById('welcome').style.display='';
+  setTimeout(()=>document.getElementById('welcome-input').focus(),100);
+}
+
 function confirmarNombre(){const val=document.getElementById('welcome-input').value.trim();if(!val)return;userName=val;saveUser();document.getElementById('welcome').style.display='none';document.getElementById('app').style.display='';updateHeader();renderAlbum();renderSobres();}
 document.getElementById('welcome-input').addEventListener('keydown',e=>{if(e.key==='Enter')confirmarNombre();});
 function updateHeader(){document.getElementById('user-name-display').textContent=userName;document.getElementById('user-avatar').textContent=userName[0].toUpperCase();}
@@ -740,6 +767,18 @@ initApp();
   </div>
 </div>
 <div id="confetti-container" class="confetti-container" style="display:none"></div>
+
+
+<div id="reset-modal" style="display:none">
+  <div class="welcome-overlay">
+    <div class="welcome-card">
+      <h1 style="color:var(--err)">⚠️ Reiniciar</h1>
+      <p>Esto borra todo — nombre, álbum, pila y sobres. No se puede deshacer.<br><br>¿Estás seguro/a?</p>
+      <button class="welcome-btn" style="background:var(--err);margin-bottom:8px" onclick="ejecutarReinicio()">Sí, reiniciar todo</button>
+      <button class="welcome-btn" style="background:var(--s3);color:var(--ink3)" onclick="document.getElementById('reset-modal').style.display='none'">Cancelar</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
